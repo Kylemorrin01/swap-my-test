@@ -2,88 +2,255 @@
 
 export default function Home() {
   return (
-    <main style={{
-      minHeight: '100vh',
-      background: 'linear-gradient(135deg, #0f172a 0%, #1e3a5f 50%, #0f172a 100%)',
-      fontFamily: "'Georgia', serif",
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      justifyContent: 'center',
-      padding: '40px 20px',
-      position: 'relative',
-      overflow: 'hidden'
-    }}>
-      <div style={{
-        position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
-        backgroundImage: 'radial-gradient(circle at 20% 50%, rgba(59,130,246,0.15) 0%, transparent 50%), radial-gradient(circle at 80% 20%, rgba(99,102,241,0.1) 0%, transparent 40%)',
-        pointerEvents: 'none'
-      }} />
+    <main
+      style={{
+        minHeight: '100vh',
+        background:
+          'radial-gradient(circle at top left, #1e3a8a 0%, transparent 35%), radial-gradient(circle at bottom right, #4338ca 0%, transparent 30%), linear-gradient(135deg, #020617 0%, #0f172a 45%, #111827 100%)',
+        fontFamily: "Inter, sans-serif",
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '32px 20px',
+        position: 'relative',
+        overflow: 'hidden',
+      }}
+    >
+      {/* Animated glow blobs */}
+      <div
+        style={{
+          position: 'absolute',
+          width: '500px',
+          height: '500px',
+          borderRadius: '999px',
+          background: 'rgba(59,130,246,0.18)',
+          filter: 'blur(120px)',
+          top: '-120px',
+          left: '-120px',
+          animation: 'float1 10s ease-in-out infinite',
+        }}
+      />
 
-      <div style={{ textAlign: 'center', maxWidth: '650px', position: 'relative', zIndex: 1 }}>
-        <div style={{ fontSize: '3.5rem', marginBottom: '10px' }}>🚗</div>
-        <h1 style={{
-          fontSize: 'clamp(2.5rem, 6vw, 4rem)',
-          color: '#f8fafc',
-          margin: '0 0 8px 0',
-          fontWeight: '700',
-          letterSpacing: '-1px',
-          lineHeight: 1.1
-        }}>
-          Swap My Test
+      <div
+        style={{
+          position: 'absolute',
+          width: '400px',
+          height: '400px',
+          borderRadius: '999px',
+          background: 'rgba(99,102,241,0.15)',
+          filter: 'blur(100px)',
+          bottom: '-100px',
+          right: '-80px',
+          animation: 'float2 12s ease-in-out infinite',
+        }}
+      />
+
+      {/* Main card */}
+      <div
+        style={{
+          width: '100%',
+          maxWidth: '760px',
+          position: 'relative',
+          zIndex: 1,
+          backdropFilter: 'blur(20px)',
+          background: 'rgba(255,255,255,0.06)',
+          border: '1px solid rgba(255,255,255,0.08)',
+          borderRadius: '32px',
+          padding: '70px 50px',
+          boxShadow:
+            '0 10px 40px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.06)',
+          textAlign: 'center',
+        }}
+      >
+        {/* Small badge */}
+        <div
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '8px',
+            background: 'rgba(59,130,246,0.12)',
+            border: '1px solid rgba(96,165,250,0.2)',
+            padding: '10px 18px',
+            borderRadius: '999px',
+            color: '#bfdbfe',
+            fontSize: '0.9rem',
+            marginBottom: '28px',
+            letterSpacing: '0.03em',
+          }}
+        >
+          🚗 UK Driving Test Swaps
+        </div>
+
+        {/* Heading */}
+        <h1
+          style={{
+            fontSize: 'clamp(3rem, 8vw, 5.5rem)',
+            lineHeight: 0.95,
+            margin: 0,
+            fontWeight: 800,
+            letterSpacing: '-0.05em',
+            color: '#f8fafc',
+          }}
+        >
+          Swap
+          <br />
+          <span
+            style={{
+              background:
+                'linear-gradient(135deg, #60a5fa 0%, #818cf8 50%, #c084fc 100%)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+            }}
+          >
+            My Test
+          </span>
         </h1>
-        <p style={{
-          fontSize: '1.1rem',
-          color: '#94a3b8',
-          marginBottom: '50px',
-          letterSpacing: '0.05em',
-          textTransform: 'uppercase',
-          fontFamily: "'Georgia', serif"
-        }}>
-          Free driving test date swaps across the UK
+
+        {/* Subtitle */}
+        <p
+          style={{
+            fontSize: '1.2rem',
+            color: '#94a3b8',
+            maxWidth: '560px',
+            margin: '28px auto 0',
+            lineHeight: 1.7,
+          }}
+        >
+          Find someone to swap driving test dates with across the UK —
+          completely free, no subscriptions, no hidden fees.
         </p>
 
-        <div style={{
-          display: 'flex',
-          gap: '20px',
-          justifyContent: 'center',
-          flexWrap: 'wrap',
-          marginBottom: '60px'
-        }}>
-          {['100% Free', 'All UK Centres', 'Instant Matching'].map(label => (
-            <div key={label} style={{
-              background: 'rgba(255,255,255,0.05)',
-              border: '1px solid rgba(255,255,255,0.1)',
-              borderRadius: '100px',
-              padding: '8px 20px',
-              color: '#cbd5e1',
-              fontSize: '0.85rem',
-              letterSpacing: '0.05em'
-            }}>
-              ✓ {label}
+        {/* Features */}
+        <div
+          style={{
+            display: 'flex',
+            gap: '14px',
+            justifyContent: 'center',
+            flexWrap: 'wrap',
+            marginTop: '42px',
+            marginBottom: '50px',
+          }}
+        >
+          {[
+            '100% Free',
+            'All UK Test Centres',
+            'Instant Matching',
+          ].map((label) => (
+            <div
+              key={label}
+              style={{
+                background: 'rgba(255,255,255,0.05)',
+                border: '1px solid rgba(255,255,255,0.08)',
+                borderRadius: '999px',
+                padding: '12px 20px',
+                color: '#e2e8f0',
+                fontSize: '0.92rem',
+                fontWeight: 500,
+                backdropFilter: 'blur(10px)',
+              }}
+            >
+              ✦ {label}
             </div>
           ))}
         </div>
 
-        <a href="/register" style={{
-          display: 'inline-block',
-          background: 'linear-gradient(135deg, #3b82f6, #6366f1)',
-          color: 'white',
-          padding: '18px 50px',
-          borderRadius: '100px',
-          textDecoration: 'none',
-          fontSize: '1.1rem',
-          fontWeight: '600',
-          letterSpacing: '0.02em',
-          boxShadow: '0 20px 60px rgba(59,130,246,0.4)',
-        }}>
-          Find My Swap →
-        </a>
+        {/* Buttons */}
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: '18px',
+          }}
+        >
+          <a
+            href="/register"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '10px',
+              background:
+                'linear-gradient(135deg, #3b82f6 0%, #6366f1 100%)',
+              color: 'white',
+              padding: '20px 54px',
+              borderRadius: '999px',
+              textDecoration: 'none',
+              fontSize: '1.05rem',
+              fontWeight: 700,
+              letterSpacing: '-0.01em',
+              boxShadow:
+                '0 15px 40px rgba(59,130,246,0.35)',
+              transition: 'all 0.25s ease',
+            }}
+          >
+            Find My Swap →
+          </a>
 
-        <p style={{ color: '#475569', fontSize: '0.85rem', marginTop: '30px' }}>
-          No account needed · Takes 2 minutes
+          <a
+            href="/check-match"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              background: 'rgba(255,255,255,0.04)',
+              border: '1px solid rgba(255,255,255,0.1)',
+              color: '#cbd5e1',
+              padding: '16px 38px',
+              borderRadius: '999px',
+              textDecoration: 'none',
+              fontSize: '1rem',
+              fontWeight: 600,
+              backdropFilter: 'blur(10px)',
+            }}
+          >
+            Check Match Status
+          </a>
+        </div>
+
+        {/* Footer text */}
+        <p
+          style={{
+            color: '#64748b',
+            fontSize: '0.88rem',
+            marginTop: '32px',
+            letterSpacing: '0.02em',
+          }}
+        >
+          No account needed · Takes under 2 minutes
         </p>
       </div>
+
+      {/* Keyframes */}
+      <style jsx>{`
+        @keyframes float1 {
+          0% {
+            transform: translateY(0px);
+          }
+          50% {
+            transform: translateY(25px);
+          }
+          100% {
+            transform: translateY(0px);
+          }
+        }
+
+        @keyframes float2 {
+          0% {
+            transform: translateY(0px);
+          }
+          50% {
+            transform: translateY(-20px);
+          }
+          100% {
+            transform: translateY(0px);
+          }
+        }
+
+        a:hover {
+          transform: translateY(-2px);
+        }
+      `}</style>
     </main>
   )
 }

@@ -1,79 +1,101 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { supabase } from '../lib/supabase'
+import { supabase } from '../../lib/supabase'
 
 const pageStyle = {
   minHeight: '100vh',
-  background: 'linear-gradient(135deg, #0f172a 0%, #1e3a5f 50%, #0f172a 100%)',
-  fontFamily: "'Georgia', serif",
+  background:
+    'radial-gradient(circle at top left, #1e3a8a 0%, transparent 30%), radial-gradient(circle at bottom right, #4338ca 0%, transparent 30%), linear-gradient(135deg, #020617 0%, #0f172a 50%, #111827 100%)',
+  fontFamily: 'Inter, sans-serif',
   padding: '40px 20px',
+  position: 'relative',
+  overflow: 'hidden',
 }
 
 const cardStyle = {
-  maxWidth: '560px',
+  maxWidth: '760px',
   margin: '0 auto',
-  background: 'rgba(255,255,255,0.04)',
-  border: '1px solid rgba(255,255,255,0.1)',
-  borderRadius: '24px',
-  padding: '40px',
-  backdropFilter: 'blur(10px)',
+  background: 'rgba(255,255,255,0.06)',
+  border: '1px solid rgba(255,255,255,0.08)',
+  borderRadius: '32px',
+  padding: '50px',
+  backdropFilter: 'blur(20px)',
+  boxShadow:
+    '0 10px 40px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.04)',
+  position: 'relative',
+  zIndex: 2,
 }
 
 const inputStyle = {
-  padding: '13px 16px',
-  fontSize: '0.95rem',
-  border: '1px solid rgba(255,255,255,0.12)',
-  borderRadius: '12px',
+  padding: '15px 18px',
+  fontSize: '0.96rem',
+  border: '1px solid rgba(255,255,255,0.08)',
+  borderRadius: '14px',
   width: '100%',
   boxSizing: 'border-box',
-  fontFamily: "'Georgia', serif",
-  background: 'rgba(255,255,255,0.06)',
-  color: '#f1f5f9',
+  fontFamily: 'Inter, sans-serif',
+  background: 'rgba(255,255,255,0.04)',
+  color: '#f8fafc',
   outline: 'none',
+  transition: 'all 0.2s ease',
 }
 
 const labelStyle = {
   color: '#94a3b8',
-  fontSize: '0.75rem',
+  fontSize: '0.72rem',
   textTransform: 'uppercase',
-  letterSpacing: '0.1em',
-  marginBottom: '6px',
-  display: 'block'
+  letterSpacing: '0.12em',
+  marginBottom: '8px',
+  display: 'block',
+  fontWeight: '600',
 }
 
 const sectionStyle = {
-  borderTop: '1px solid rgba(255,255,255,0.07)',
-  paddingTop: '20px',
-  marginTop: '5px'
+  border: '1px solid rgba(255,255,255,0.06)',
+  background: 'rgba(255,255,255,0.03)',
+  borderRadius: '24px',
+  padding: '24px',
 }
 
 export default function Register() {
   const [form, setForm] = useState({
     full_name: '',
     email: '',
+    phone: '',
     current_test_date: '',
+    current_test_time: '',
+    current_test_ampm: 'AM',
     current_test_centre: '',
   })
+
   const [desiredCentres, setDesiredCentres] = useState(['', '', ''])
   const [dateRange, setDateRange] = useState({ from: '', to: '' })
-  const [excludedRanges, setExcludedRanges] = useState([])
-  const [excludeInput, setExcludeInput] = useState({ from: '', to: '' })
   const [centres, setCentres] = useState([])
-  const [matches, setMatches] = useState([])
   const [status, setStatus] = useState('')
-  const [step, setStep] = useState(1)
   const [loading, setLoading] = useState(false)
 
   useEffect(() => {
     const loadCentres = async () => {
-      const { data } = await supabase.from('test_centres').select('name').order('name')
-      if (data) setCentres(data.map(c => c.name))
+      const { data } = await supabase
+        .from('test_centres')
+        .select('name')
+        .order('name')
+
+      if (data) {
+        setCentres(data.map((c) => c.name))
+      }
     }
+
     loadCentres()
   }, [])
 
-  const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value })
+  const handleChange = (e) => {
+    setForm({
+      ...form,
+      [e.target.name]: e.target.value,
+    })
+  }
 
   const handleDesiredCentre = (index, value) => {
     const updated = [...desiredCentres]
@@ -81,275 +103,515 @@ export default function Register() {
     setDesiredCentres(updated)
   }
 
-  const addExcludedRange = () => {
-    if (excludeInput.from && excludeInput.to) {
-      setExcludedRanges([...excludedRanges, { ...excludeInput }])
-      setExcludeInput({ from: '', to: '' })
-    }
-  }
-
-  const isDateExcluded = (date) =>
-    excludedRanges.some(range => date >= range.from && date <= range.to)
-
   const handleSubmit = async () => {
     setLoading(true)
     setStatus('')
 
-    const { data: { user }, error: signUpError } = await supabase.auth.signUp({
-      email: form.email,
-      password: Math.random().toString(36).slice(-8),
-    })
+    try {
+      const {
+        data: { user },
+        error: signUpError,
+      } = await supabase.auth.signUp({
+        email: form.email,
+        password: Math.random().toString(36).slice(-8),
+      })
 
-    if (signUpError) {
-      setStatus('Error: ' + signUpError.message)
-      setLoading(false)
-      return
+      if (signUpError) {
+        setStatus(signUpError.message)
+        setLoading(false)
+        return
+      }
+
+      const filteredCentres = desiredCentres.filter((c) => c)
+
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .insert({
+          id: user.id,
+          full_name: form.full_name,
+          email: form.email,
+          phone: form.phone,
+          current_test_date: form.current_test_date,
+          current_test_time: `${form.current_test_time} ${form.current_test_ampm}`,
+          current_test_centre: form.current_test_centre,
+          desired_centres: filteredCentres,
+          desired_dates: [dateRange.from, dateRange.to],
+        })
+
+      if (profileError) {
+        setStatus(profileError.message)
+        setLoading(false)
+        return
+      }
+
+      setStatus(
+        "✅ You're registered! We'll notify you when a match is found."
+      )
+    } catch (err) {
+      setStatus('Something went wrong.')
     }
-
-    const filteredCentres = desiredCentres.filter(c => c !== '')
-
-    const { error: profileError } = await supabase.from('profiles').insert({
-      id: user.id,
-      full_name: form.full_name,
-      email: form.email,
-      current_test_date: form.current_test_date,
-      current_test_centre: form.current_test_centre,
-      desired_centres: filteredCentres,
-      desired_dates: [dateRange.from, dateRange.to],
-    })
-
-    if (profileError) {
-      setStatus('Error saving details: ' + profileError.message)
-      setLoading(false)
-      return
-    }
-
-    const { data: potentialMatches } = await supabase
-      .from('profiles')
-      .select()
-      .in('current_test_centre', filteredCentres)
-      .gte('current_test_date', dateRange.from)
-      .lte('current_test_date', dateRange.to)
-      .eq('match_status', 'unmatched')
-      .neq('id', user.id)
-
-    const filteredMatches = potentialMatches
-      ? potentialMatches.filter(m => !isDateExcluded(m.current_test_date))
-      : []
 
     setLoading(false)
-
-    if (filteredMatches.length > 0) {
-      setMatches(filteredMatches)
-      setStep(2)
-    } else {
-      setStatus("✅ You're registered! We'll notify you when a match is found.")
-    }
-  }
-
-  const getInitials = (name) =>
-    name.split(' ').map(n => n[0]).join('').toUpperCase()
-
-  const requestSwap = async (match) => {
-    await fetch('/api/send-match-email', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        user1: { full_name: form.full_name, email: form.email, current_test_centre: form.current_test_centre, current_test_date: form.current_test_date },
-        user2: { full_name: match.full_name, email: match.email, current_test_centre: match.current_test_centre, current_test_date: match.current_test_date }
-      })
-    })
-    setStatus(`✅ Swap requested! Both you and ${getInitials(match.full_name)} have been notified by email.`)
-    setMatches([])
-  }
-
-  if (step === 2) {
-    return (
-      <div style={pageStyle}>
-        <div style={{ ...cardStyle, maxWidth: '600px' }}>
-          <a href="/" style={{ color: '#64748b', textDecoration: 'none', fontSize: '0.85rem', display: 'block', marginBottom: '25px' }}>← Back</a>
-          <h1 style={{ fontSize: '1.8rem', color: '#f1f5f9', margin: '0 0 5px 0', fontWeight: '700' }}>🎉 Matches Found!</h1>
-          <p style={{ color: '#64748b', marginBottom: '30px', fontSize: '0.95rem' }}>
-            Request a swap with anyone below — both of you will be notified by email
-          </p>
-
-          {status && (
-            <div style={{ background: 'rgba(59,130,246,0.1)', border: '1px solid rgba(59,130,246,0.3)', borderRadius: '12px', padding: '15px', color: '#93c5fd', textAlign: 'center', marginBottom: '20px', fontSize: '0.95rem' }}>
-              {status}
-            </div>
-          )}
-
-          {matches.map((match, i) => (
-            <div key={i} style={{
-              border: '1px solid rgba(255,255,255,0.08)',
-              borderRadius: '16px',
-              padding: '20px 24px',
-              marginBottom: '12px',
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              background: 'rgba(255,255,255,0.03)'
-            }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-                <div style={{
-                  width: '48px', height: '48px', borderRadius: '50%',
-                  background: 'linear-gradient(135deg, #3b82f6, #6366f1)',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  color: 'white', fontWeight: '700', fontSize: '1rem', flexShrink: 0
-                }}>
-                  {getInitials(match.full_name)}
-                </div>
-                <div>
-                  <p style={{ margin: '0 0 3px 0', color: '#e2e8f0', fontWeight: '600', fontSize: '0.95rem' }}>
-                    {getInitials(match.full_name)}
-                  </p>
-                  <p style={{ margin: '0', color: '#64748b', fontSize: '0.85rem' }}>
-                    📍 {match.current_test_centre}
-                  </p>
-                  <p style={{ margin: '0', color: '#64748b', fontSize: '0.85rem' }}>
-                    📅 {new Date(match.current_test_date).toLocaleDateString('en-GB')}
-                  </p>
-                </div>
-              </div>
-              <button onClick={() => requestSwap(match)} style={{
-                background: 'linear-gradient(135deg, #3b82f6, #6366f1)',
-                color: 'white', padding: '10px 20px',
-                border: 'none', borderRadius: '100px',
-                fontSize: '0.9rem', cursor: 'pointer',
-                fontWeight: '600', whiteSpace: 'nowrap'
-              }}>
-                Request Swap
-              </button>
-            </div>
-          ))}
-        </div>
-      </div>
-    )
   }
 
   return (
     <div style={pageStyle}>
+      {/* Glow effects */}
+      <div
+        style={{
+          position: 'absolute',
+          width: '500px',
+          height: '500px',
+          borderRadius: '999px',
+          background: 'rgba(59,130,246,0.15)',
+          filter: 'blur(120px)',
+          top: '-150px',
+          left: '-100px',
+        }}
+      />
+
+      <div
+        style={{
+          position: 'absolute',
+          width: '400px',
+          height: '400px',
+          borderRadius: '999px',
+          background: 'rgba(99,102,241,0.12)',
+          filter: 'blur(120px)',
+          bottom: '-120px',
+          right: '-80px',
+        }}
+      />
+
       <div style={cardStyle}>
-        <a href="/" style={{ color: '#64748b', textDecoration: 'none', fontSize: '0.85rem', display: 'block', marginBottom: '25px' }}>← Back</a>
-        <h1 style={{ fontSize: '1.8rem', color: '#f1f5f9', margin: '0 0 5px 0', fontWeight: '700' }}>📋 Register Your Test</h1>
-        <p style={{ color: '#64748b', marginBottom: '30px', fontSize: '0.95rem' }}>Fill in your details and we'll find you a swap</p>
-
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-
-          <div>
-            <span style={labelStyle}>Full Name</span>
-            <input name="full_name" placeholder="John Smith" onChange={handleChange} style={inputStyle} />
+        <div style={{ marginBottom: '35px' }}>
+          <div
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '8px',
+              background: 'rgba(59,130,246,0.12)',
+              border: '1px solid rgba(96,165,250,0.18)',
+              padding: '10px 18px',
+              borderRadius: '999px',
+              color: '#bfdbfe',
+              fontSize: '0.85rem',
+              marginBottom: '24px',
+              fontWeight: 500,
+            }}
+          >
+            🚗 Driving Test Swap Registration
           </div>
 
-          <div>
-            <span style={labelStyle}>Email Address</span>
-            <input name="email" placeholder="john@example.com" type="email" onChange={handleChange} style={inputStyle} />
+          <h1
+            style={{
+              fontSize: 'clamp(2.5rem, 6vw, 4rem)',
+              color: '#f8fafc',
+              margin: '0 0 12px 0',
+              fontWeight: 800,
+              lineHeight: 1,
+              letterSpacing: '-0.04em',
+            }}
+          >
+            Find Your
+            <br />
+
+            <span
+              style={{
+                background:
+                  'linear-gradient(135deg, #60a5fa 0%, #818cf8 50%, #c084fc 100%)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+              }}
+            >
+              Perfect Swap
+            </span>
+          </h1>
+
+          <p
+            style={{
+              color: '#94a3b8',
+              fontSize: '1.05rem',
+              lineHeight: 1.7,
+            }}
+          >
+            Enter your driving test details and we’ll automatically
+            match you with compatible drivers across the UK.
+          </p>
+        </div>
+
+        <div
+  style={{
+    display: 'flex',
+    gap: '10px',
+    marginBottom: '24px',
+    flexWrap: 'wrap',
+  }}
+>
+  <button
+    type="button"
+    onClick={() => {
+      setForm({
+        full_name: 'John Smith',
+        email: `john${Date.now()}@example.com`,
+        phone: '07700900001',
+        current_test_date: '2026-08-04',
+        current_test_time: '10:04',
+        current_test_ampm: 'AM',
+        current_test_centre: 'Wellingborough',
+      })
+
+      setDesiredCentres([
+        'Wellingborough',
+        'Kettering',
+        '',
+      ])
+
+      setDateRange({
+        from: '2026-07-01',
+        to: '2026-08-30',
+      })
+    }}
+    style={{
+      background: 'rgba(255,255,255,0.05)',
+      border: '1px solid rgba(255,255,255,0.08)',
+      color: '#cbd5e1',
+      padding: '12px 18px',
+      borderRadius: '12px',
+      cursor: 'pointer',
+    }}
+  >
+    Fill Demo User 1
+  </button>
+
+  <button
+    type="button"
+    onClick={() => {
+      setForm({
+        full_name: 'Sarah Williams',
+        email: `sarah${Date.now()}@example.com`,
+        phone: '07700900002',
+        current_test_date: '2026-07-20',
+        current_test_time: '11:30',
+        current_test_ampm: 'AM',
+        current_test_centre: 'Kettering',
+      })
+
+      setDesiredCentres([
+        'Wellingborough',
+        'Kettering',
+        '',
+      ])
+
+      setDateRange({
+        from: '2026-07-01',
+        to: '2026-08-30',
+      })
+    }}
+    style={{
+      background: 'rgba(255,255,255,0.05)',
+      border: '1px solid rgba(255,255,255,0.08)',
+      color: '#cbd5e1',
+      padding: '12px 18px',
+      borderRadius: '12px',
+      cursor: 'pointer',
+    }}
+  >
+    Fill Demo User 2
+  </button>
+</div>
+
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '18px',
+          }}
+        >
+          <div style={sectionStyle}>
+            <div style={{ marginBottom: '18px' }}>
+              <p
+                style={{
+                  color: '#f8fafc',
+                  fontWeight: 700,
+                  marginBottom: '6px',
+                }}
+              >
+                Your Details
+              </p>
+
+              <p
+                style={{
+                  color: '#64748b',
+                  margin: 0,
+                  fontSize: '0.9rem',
+                }}
+              >
+                Basic contact information
+              </p>
+            </div>
+
+            <div
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '14px',
+              }}
+            >
+              <div>
+                <span style={labelStyle}>Full Name</span>
+
+                <input
+                  name="full_name"
+                  value={form.full_name}
+                  onChange={handleChange}
+                  placeholder="John Smith"
+                  style={inputStyle}
+                />
+              </div>
+
+              <div>
+                <span style={labelStyle}>Email</span>
+
+                <input
+                  name="email"
+                  type="email"
+                  value={form.email}
+                  onChange={handleChange}
+                  placeholder="john@example.com"
+                  style={inputStyle}
+                />
+              </div>
+
+              <div>
+                <span style={labelStyle}>Phone Number</span>
+
+                <input
+                  name="phone"
+                  value={form.phone}
+                  onChange={handleChange}
+                  placeholder="07700 900000"
+                  style={inputStyle}
+                />
+              </div>
+            </div>
           </div>
 
           <div style={sectionStyle}>
-            <p style={{ ...labelStyle, color: '#f1f5f9', fontSize: '0.8rem', marginBottom: '14px' }}>YOUR CURRENT TEST</p>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-              <div>
-                <span style={labelStyle}>Test Date</span>
-                <input name="current_test_date" type="date" onChange={handleChange} style={inputStyle} />
+            <div style={{ marginBottom: '18px' }}>
+              <p
+                style={{
+                  color: '#f8fafc',
+                  fontWeight: 700,
+                  marginBottom: '6px',
+                }}
+              >
+                Current Test
+              </p>
+            </div>
+
+            <div
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '14px',
+              }}
+            >
+              <div style={{ display: 'flex', gap: '12px' }}>
+                <div style={{ flex: 1 }}>
+                  <span style={labelStyle}>Date</span>
+
+                  <input
+                    type="date"
+                    name="current_test_date"
+                    value={form.current_test_date}
+                    onChange={handleChange}
+                    style={inputStyle}
+                  />
+                </div>
+
+                <div style={{ flex: 1 }}>
+                  <span style={labelStyle}>Time</span>
+
+                  <input
+                    name="current_test_time"
+                    value={form.current_test_time}
+                    onChange={handleChange}
+                    placeholder="10:14"
+                    style={inputStyle}
+                  />
+                </div>
               </div>
+
+              <div>
+                <span style={labelStyle}>AM / PM</span>
+
+                <select
+                  name="current_test_ampm"
+                  value={form.current_test_ampm}
+                  onChange={handleChange}
+                  style={inputStyle}
+                >
+                  <option value="AM">AM</option>
+                  <option value="PM">PM</option>
+                </select>
+              </div>
+
               <div>
                 <span style={labelStyle}>Test Centre</span>
-                <select name="current_test_centre" onChange={handleChange} style={{ ...inputStyle, color: form.current_test_centre ? '#f1f5f9' : '#64748b' }}>
-                  <option value="">Select your test centre</option>
-                  {centres.map(c => <option key={c} value={c} style={{ background: '#1e3a5f' }}>{c}</option>)}
+
+                <select
+                  name="current_test_centre"
+                  value={form.current_test_centre}
+                  onChange={handleChange}
+                  style={inputStyle}
+                >
+                  <option value="">Select centre</option>
+
+                  {centres.map((c) => (
+                    <option
+                      key={c}
+                      value={c}
+                      style={{ background: '#0f172a' }}
+                    >
+                      {c}
+                    </option>
+                  ))}
                 </select>
               </div>
             </div>
           </div>
 
           <div style={sectionStyle}>
-            <p style={{ ...labelStyle, color: '#f1f5f9', fontSize: '0.8rem', marginBottom: '14px' }}>DESIRED DATE RANGE</p>
-            <div style={{ display: 'flex', gap: '10px' }}>
+            <div style={{ marginBottom: '18px' }}>
+              <p
+                style={{
+                  color: '#f8fafc',
+                  fontWeight: 700,
+                  marginBottom: '6px',
+                }}
+              >
+                Desired Date Range
+              </p>
+            </div>
+
+            <div style={{ display: 'flex', gap: '12px' }}>
               <div style={{ flex: 1 }}>
                 <span style={labelStyle}>From</span>
-                <input type="date" onChange={e => setDateRange({ ...dateRange, from: e.target.value })} style={inputStyle} />
+
+                <input
+                  type="date"
+                  value={dateRange.from}
+                  onChange={(e) =>
+                    setDateRange({
+                      ...dateRange,
+                      from: e.target.value,
+                    })
+                  }
+                  style={inputStyle}
+                />
               </div>
+
               <div style={{ flex: 1 }}>
                 <span style={labelStyle}>To</span>
-                <input type="date" onChange={e => setDateRange({ ...dateRange, to: e.target.value })} style={inputStyle} />
+
+                <input
+                  type="date"
+                  value={dateRange.to}
+                  onChange={(e) =>
+                    setDateRange({
+                      ...dateRange,
+                      to: e.target.value,
+                    })
+                  }
+                  style={inputStyle}
+                />
               </div>
             </div>
           </div>
 
           <div style={sectionStyle}>
-            <p style={{ ...labelStyle, color: '#f1f5f9', fontSize: '0.8rem', marginBottom: '4px' }}>EXCLUDE DATE RANGES <span style={{ color: '#475569', fontWeight: 'normal' }}>(OPTIONAL)</span></p>
-            <p style={{ color: '#475569', fontSize: '0.8rem', marginBottom: '12px' }}>Add any dates within your range you can't do</p>
-            <div style={{ display: 'flex', gap: '10px', alignItems: 'flex-end' }}>
-              <div style={{ flex: 1 }}>
-                <span style={labelStyle}>From</span>
-                <input type="date" value={excludeInput.from} onChange={e => setExcludeInput({ ...excludeInput, from: e.target.value })} style={inputStyle} />
-              </div>
-              <div style={{ flex: 1 }}>
-                <span style={labelStyle}>To</span>
-                <input type="date" value={excludeInput.to} onChange={e => setExcludeInput({ ...excludeInput, to: e.target.value })} style={inputStyle} />
-              </div>
-              <button type="button" onClick={addExcludedRange} style={{
-                background: 'rgba(255,255,255,0.08)', color: '#94a3b8',
-                border: '1px solid rgba(255,255,255,0.12)', borderRadius: '12px',
-                padding: '13px 16px', cursor: 'pointer', fontSize: '0.85rem',
-                whiteSpace: 'nowrap', fontFamily: "'Georgia', serif"
-              }}>
-                + Add
-              </button>
+            <div style={{ marginBottom: '18px' }}>
+              <p
+                style={{
+                  color: '#f8fafc',
+                  fontWeight: 700,
+                  marginBottom: '6px',
+                }}
+              >
+                Preferred Test Centres
+              </p>
             </div>
 
-            {excludedRanges.length > 0 && (
-              <div style={{ marginTop: '10px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                {excludedRanges.map((range, i) => (
-                  <div key={i} style={{
-                    display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                    background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.2)',
-                    padding: '8px 14px', borderRadius: '10px'
-                  }}>
-                    <span style={{ color: '#fca5a5', fontSize: '0.85rem' }}>
-                      {new Date(range.from).toLocaleDateString('en-GB')} — {new Date(range.to).toLocaleDateString('en-GB')}
-                    </span>
-                    <button onClick={() => setExcludedRanges(excludedRanges.filter((_, j) => j !== i))} style={{
-                      background: 'none', border: 'none', cursor: 'pointer', color: '#f87171', fontSize: '1.1rem'
-                    }}>×</button>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
+            <div
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '12px',
+              }}
+            >
+              {[0, 1, 2].map((i) => (
+                <select
+                  key={i}
+                  value={desiredCentres[i]}
+                  onChange={(e) =>
+                    handleDesiredCentre(i, e.target.value)
+                  }
+                  style={inputStyle}
+                >
+                  <option value="">
+                    Centre {i + 1} (optional)
+                  </option>
 
-          <div style={sectionStyle}>
-            <p style={{ ...labelStyle, color: '#f1f5f9', fontSize: '0.8rem', marginBottom: '14px' }}>DESIRED TEST CENTRES <span style={{ color: '#475569', fontWeight: 'normal' }}>(UP TO 3)</span></p>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-              {[0, 1, 2].map(i => (
-                <select key={i} onChange={e => handleDesiredCentre(i, e.target.value)} style={{ ...inputStyle, color: desiredCentres[i] ? '#f1f5f9' : '#64748b' }}>
-                  <option value="">Centre {i + 1} (optional)</option>
-                  {centres.map(c => <option key={c} value={c} style={{ background: '#1e3a5f' }}>{c}</option>)}
+                  {centres.map((c) => (
+                    <option
+                      key={c}
+                      value={c}
+                      style={{ background: '#0f172a' }}
+                    >
+                      {c}
+                    </option>
+                  ))}
                 </select>
               ))}
             </div>
           </div>
 
-          <button onClick={handleSubmit} disabled={loading} style={{
-            background: loading ? 'rgba(255,255,255,0.1)' : 'linear-gradient(135deg, #3b82f6, #6366f1)',
-            color: loading ? '#64748b' : 'white',
-            padding: '16px',
-            border: 'none', borderRadius: '100px',
-            fontSize: '1rem', cursor: loading ? 'not-allowed' : 'pointer',
-            fontWeight: '600', marginTop: '10px',
-            fontFamily: "'Georgia', serif",
-            transition: 'all 0.2s'
-          }}>
-            {loading ? 'Searching...' : 'Find My Swap →'}
+          <button
+            onClick={handleSubmit}
+            disabled={loading}
+            style={{
+              background: loading
+                ? 'rgba(255,255,255,0.08)'
+                : 'linear-gradient(135deg, #3b82f6 0%, #6366f1 100%)',
+              color: loading ? '#64748b' : 'white',
+              padding: '20px',
+              border: 'none',
+              borderRadius: '18px',
+              fontSize: '1rem',
+              cursor: loading ? 'not-allowed' : 'pointer',
+              fontWeight: 700,
+              boxShadow: loading
+                ? 'none'
+                : '0 15px 40px rgba(59,130,246,0.35)',
+            }}
+          >
+            {loading
+              ? 'Searching for matches...'
+              : 'Find My Swap →'}
           </button>
 
           {status && (
-            <div style={{
-              background: 'rgba(59,130,246,0.1)', border: '1px solid rgba(59,130,246,0.3)',
-              borderRadius: '12px', padding: '15px', color: '#93c5fd',
-              textAlign: 'center', fontSize: '0.95rem'
-            }}>
+            <div
+              style={{
+                background: 'rgba(59,130,246,0.1)',
+                border: '1px solid rgba(59,130,246,0.25)',
+                borderRadius: '18px',
+                padding: '18px',
+                color: '#bfdbfe',
+                textAlign: 'center',
+              }}
+            >
               {status}
             </div>
           )}
